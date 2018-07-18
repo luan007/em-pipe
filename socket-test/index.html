@@ -1,0 +1,16 @@
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    var socket = io();
+    socket.on('state', (data) => {
+        document.writeln("state info<br>");
+        document.writeln(JSON.stringify(data) + "<br>");
+        console.log(data);
+        socket.emit("all", { "test": 1 });
+    });
+
+    socket.on("all", (data) => {
+        document.writeln("all<br>");
+        document.writeln(JSON.stringify(data) + "<br>");
+    });
+</script>
