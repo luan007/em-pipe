@@ -83,7 +83,7 @@ else {
 
 function listen(port) {
   var options = {
-    root: argv._[0] || __dirname,
+    root: argv._[0],
     cache: argv.c,
     io: argv.io == undefined ? true : (argv.io),
     showDir: argv.d == undefined ? true : (argv.d),

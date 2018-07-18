@@ -6,6 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "em-pipe": "./index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/luan007/em-pipe.git"
