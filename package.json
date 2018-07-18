@@ -1,6 +1,6 @@
 {
   "name": "em-pipe",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "transparent socket.io pipe + static file server",
   "main": "index.js",
   "scripts": {
