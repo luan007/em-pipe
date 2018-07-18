@@ -15,6 +15,11 @@ module.exports.createServer = function (options) {
         app.use(cors());
     }
 
+    app.use(function (req, res, next) {
+        res.setHeader('X-Powered-By', 'EM-PIPE')
+        next()
+    })
+
     var cacheOptions = {};
 
     if (options.cache) {
@@ -64,7 +69,7 @@ module.exports.createServer = function (options) {
     // app.get("/streaming", (req, res) => {
     //     res.send(`
     //         <html>
-                
+
     //         </html>
     //     `);
     // });
