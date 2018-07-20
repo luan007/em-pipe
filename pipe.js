@@ -66,13 +66,26 @@ module.exports.createServer = function (options) {
 
     app.use(bodyParser({ extended: true }));
 
-    // app.get("/streaming", (req, res) => {
-    //     res.send(`
-    //         <html>
+    app.get("/socket-test", (req, res) => {
+        res.send(`
+        <script src="/socket.io/socket.io.js"></script>
 
-    //         </html>
-    //     `);
-    // });
+        <script>
+            var socket = io();
+            socket.on('state', (data) => {
+                document.writeln("state info<br>");
+                document.writeln(JSON.stringify(data) + "<br>");
+                console.log(data);
+                socket.emit("all", { "test": 1 });
+            });
+        
+            socket.on("all", (data) => {
+                document.writeln("all<br>");
+                document.writeln(JSON.stringify(data) + "<br>");
+            });
+        </script>
+        `);
+    });
 
     app.get("/state", (req, res) => {
         res.json(states).end();
