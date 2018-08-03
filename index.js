@@ -9,13 +9,14 @@ var colors = require('colors/safe'),
   opener = require('opener'),
   argv = require('optimist')
     .boolean('cors')
+    .boolean("x")
     .argv;
 
 var ifaces = os.networkInterfaces();
 
 if (argv.h || argv.help) {
   console.log([
-    'usage: http-server [path] [options]',
+    'usage: em-pipe [path] [options]',
     '',
     'options:',
     '  -p           Port to use [8080]',
@@ -28,6 +29,8 @@ if (argv.h || argv.help) {
     '  -s           Silent Mode',
     '',
     '  -io          Enable / Disable Socket.io pipe (default true)',
+    '',
+    '  -x [keys]    Data Endpoints (default false)',
     '',
     '  -h --help    Print this list and exit.'
   ].join('\n'));
@@ -88,6 +91,7 @@ function listen(port) {
     io: argv.io == undefined ? true : (argv.io),
     showDir: argv.d == undefined ? true : (argv.d),
     logFn: logger.request,
+    store: argv.x
   };
 
   if (argv.cors) {
@@ -109,7 +113,7 @@ function listen(port) {
     logger.info([colors.yellow('Starting up http-server, serving '),
     colors.cyan(options.root),
     ssl ? (colors.yellow(' through') + colors.cyan(' https')) : '',
-      colors.yellow('\nAvailable on:')
+    colors.yellow('\nAvailable on:')
     ].join(''));
 
     if (argv.a && host !== '0.0.0.0') {

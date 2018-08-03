@@ -1,13 +1,77 @@
-var app = require('express')();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
-var bodyParser = require('body-parser');
-var serveIndex = require('serve-index')
-var serveStatic = require('serve-static')
-var cors = require('cors')
-var states = {};
 
-module.exports.createServer = function (options) {
+var os = require('os'),
+    opener = require('opener'),
+    colors = require('colors'),
+    portfinder = require('portfinder'),
+    ifaces = os.networkInterfaces();
+
+/**
+ * 
+var opts = {
+    cache: program.cache,
+    port: program.port,
+    addr: program.addr,
+    cors: program.cors,
+    dir: program.dir,
+    socketio: program.socketio,
+    data: program.data.split(" "),
+    open: program.open || false
+};
+*/
+
+module.exports.start = function (options) {
+
+    var server = createServer(options);
+    options.server = server;
+    if (!options.port) {
+        portfinder.basePort = 8080;
+        portfinder.getPort(function (err, port) {
+            if (err) { throw err; }
+            options.port = port;
+            listen(options);
+        });
+    }
+    else {
+        listen(options);
+    }
+
+}
+
+
+function listen(options) {
+    var server = options.server;
+    var host = options.addr;
+    var port = options.port;
+    var ssl = options.ssl;
+    server.listen(options.port, options.addr, function () {
+        var canonicalHost = options.addr === '0.0.0.0' ? '127.0.0.1' : options.addr,
+            protocol = options.ssl ? 'https://' : 'http://';
+
+        console.log([colors.yellow('Starting up http-server, serving '),
+        colors.cyan(options.root),
+        ssl ? (colors.yellow(' through') + colors.cyan(' https')) : '',
+        colors.yellow('\nAvailable on:')
+        ].join(''));
+        console.log('Hit CTRL-C to stop the server');
+        if (options.open) {
+            opener(
+                protocol + canonicalHost + ':' + port,
+                { command: options.open !== true ? options.open : null }
+            );
+        }
+    });
+}
+
+
+function createServer(options) {
+    var app = require('express')();
+    var server = require('http').Server(app);
+    var bodyParser = require('body-parser');
+    var serveIndex = require('serve-index')
+    var serveStatic = require('serve-static')
+    var cors = require('cors')
+    var states = {};
+
 
     console.log(options);
     if (options.cors) {
@@ -24,6 +88,7 @@ module.exports.createServer = function (options) {
         cacheOptions['maxAge'] = options.cache;
     }
 
+    var io = require('socket.io')(server);
     function broadcast(event, data, _owner) {
         var clients = io.sockets.sockets;
         for (var e in clients) {
@@ -105,11 +170,11 @@ module.exports.createServer = function (options) {
         res.json(states[req.params['key']]).end();
     });
 
-    if (options.showDir) {
+    if (options.dir) {
         app.use('/', serveStatic(options.root, cacheOptions), serveIndex(options.root, { 'icons': true }));
     } else {
         app.use('/', serveStatic(options.root, cacheOptions));
     }
 
     return server;
-};
+}
