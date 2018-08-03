@@ -52,6 +52,15 @@ function listen(options) {
         ssl ? (colors.yellow(' through') + colors.cyan(' https')) : '',
         colors.yellow('\nAvailable on:')
         ].join(''));
+
+        Object.keys(ifaces).forEach(function (dev) {
+            ifaces[dev].forEach(function (details) {
+                if (details.family === 'IPv4') {
+                    console.log(('  ' + protocol + details.address + ':' + colors.green(port.toString())));
+                }
+            });
+        });
+
         console.log('Hit CTRL-C to stop the server');
         if (options.open) {
             opener(
@@ -73,7 +82,6 @@ function createServer(options) {
     var states = {};
 
 
-    console.log(options);
     if (options.cors) {
         app.use(cors());
     }
