@@ -78,6 +78,7 @@ function createServer(options) {
     options.app = app;
 
     var bodyParser = require('body-parser');
+
     var serveIndex = require('serve-index')
     var serveStatic = require('serve-static')
     var cors = require('cors')
@@ -87,14 +88,12 @@ function createServer(options) {
         app.use(cors());
     }
 
-    if(options.data.length > 0) {
-        require('./persist.js').start(options);
-    }
 
     app.use(function (req, res, next) {
         res.setHeader('X-Powered-By', 'EM-PIPE')
         next()
     })
+
 
     var cacheOptions = {};
     if (options.cache) {
@@ -188,6 +187,13 @@ function createServer(options) {
     } else {
         app.use('/', serveStatic(options.root, cacheOptions));
     }
+
+
+    if (options.data && options.data.length > 0) {
+        require('./persist.js').start(options);
+    }
+
+
 
     return server;
 }

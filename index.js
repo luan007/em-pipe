@@ -4,11 +4,11 @@ program
   .version("vNext")
   .option('-p, --port <port>', 'Port')
   .option('-a, --addr <addr>', 'Address to be bound to', "0.0.0.0")
-  .option('-d, --dir', 'Enables / Disables dir listing (default true)', true)
-  .option('-c, --cors', 'Enables / Disables cors (default true)', true)
+  .option('-d, --dir', 'Enables / Disables dir listing (default false)')
+  .option('-c, --cors', 'Enables / Disables cors (default false)')
   // .option('-s, --socketio <io>', 'Enables / Disables socket io (default true)', true)
   .option('-h, --cache <cache>', 'Cache time (max-age) in seconds [-1], e.g. -c10 for 10 seconds. \n To disable caching, use -c-1.', -1)
-  .option('-D, --data <keys>', 'enabled data keys', '')
+  .option('-D --data [route]', 'Routing for all data access (/data)', '/data')
   .option('--datafile <filename>', 'data file name (db.json)', 'db.json')
   .option('-o, --open', 'open browser (default false)')
   .arguments("Root Path")
@@ -23,6 +23,7 @@ var opts = {
   dir: program.dir,
   socketio: program.socketio,
   data: program.data || undefined,
+  data_file: program.datafile || undefined,
   open: program.open || false,
   root: program.args[0] || process.cwd()
 };

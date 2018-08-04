@@ -1,4 +1,5 @@
 var fs = require('fs');
+var shortid = require('shortid');
 _ = require("lodash");
 var jsonpath = require('jsonpath');
 var jexl = require('jexl');
@@ -17,10 +18,11 @@ module.exports.start = function (options) {
 
     options.data_flexible = true; // for now.. extremely unsafe.
     options.data_edit_root = false;
-    options.data_route = "/";
+    options.data_route = options.data;
+    options.data_autoId = true;
 
     var db = {};
-    var file = options.data;
+    var file = options.data_file;
     function save() {
         fs.writeFileSync(file, JSON.stringify(db));
     }
@@ -55,7 +57,7 @@ module.exports.start = function (options) {
         //     obj = jsonpath.query(obj, filter.jpath);
         // } else {
         obj = _.filter(obj, filter);
-
+        obj.filtered = true;
         // }
         return obj;
     }
@@ -80,7 +82,6 @@ module.exports.start = function (options) {
     var router = express.Router();
     router.use(bparser.json({}));
     router.use((req, res, next) => {
-
         req.query = require('qs').parse(require('url').parse(req.url).query, {
             decoder: function (str) {
                 try {
@@ -94,31 +95,51 @@ module.exports.start = function (options) {
         if (req.method == 'GET') {
             var r = filterDown(req.path, req.query);
             if (r) {
-                return res.jsonp(r);
+                return res.json(r);
             }
         } else if (req.method = 'POST' && options.data_flexible) { //add data to list
-            if(routeToCompletePath(req.path).length == 0 && !options.data_edit_root) {
-                return next();
+            if (routeToCompletePath(req.path).length == 0 && !options.data_edit_root) {
+                return res.status(400).send("edit denied due to defined policy :(").end();
             }
             var r = filterDown(req.path, req.query, req.body);
+
+            if (r.filtered && r.length == 1) {
+                r = r[0]; //precision modification
+            }
+
             var d = prepInsertion(req.body);
-            if (Array.isArray(r)) {
+            if (Array.isArray(r) && !r.filtered) {
+                if (options.data_autoId && typeof d == 'object') {
+                    d['__id'] = shortid.generate();
+                }
                 r.push(d);
                 save();
-                return res.jsonp(d);
-            } else if (typeof r == 'object') {
+                return res.json(d);
+            }
+            else if (Array.isArray(r) && r.filtered) {
+                //modify all..
+                for (var t = 0; t < r.length; t++) {
+                    for (var i in req.body) {
+                        r[t][i] = d[i];
+                    }
+                }
+                save();
+                return res.json(r);
+            }
+            else if (typeof r == 'object') {
                 for (var i in req.body) {
                     r[i] = d[i];
                 }
                 save();
-                return res.jsonp(r);
+                return res.json(r);
             } else {
                 _.set(db, routeToCompletePath(req.path), d);
                 save();
-                return res.jsonp(d);
+                return res.json(d);
             }
         }
         next(); //didnt caught it :(
     })
+    console.log(options.data_route);
     options.app.use(options.data_route, router);
 }
