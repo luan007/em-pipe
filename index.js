@@ -9,6 +9,7 @@ program
   // .option('-s, --socketio <io>', 'Enables / Disables socket io (default true)', true)
   .option('-h, --cache <cache>', 'Cache time (max-age) in seconds [-1], e.g. -c10 for 10 seconds. \n To disable caching, use -c-1.', -1)
   .option('-D, --data <keys>', 'enabled data keys', '')
+  .option('--datafile <filename>', 'data file name (db.json)', 'db.json')
   .option('-o, --open', 'open browser (default false)')
   .arguments("Root Path")
   .parse(process.argv);
@@ -21,7 +22,7 @@ var opts = {
   cors: program.cors,
   dir: program.dir,
   socketio: program.socketio,
-  data: program.data.split(" "),
+  data: program.data || undefined,
   open: program.open || false,
   root: program.args[0] || process.cwd()
 };

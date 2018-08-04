@@ -75,23 +75,28 @@ function listen(options) {
 function createServer(options) {
     var app = require('express')();
     var server = require('http').Server(app);
+    options.app = app;
+
     var bodyParser = require('body-parser');
     var serveIndex = require('serve-index')
     var serveStatic = require('serve-static')
     var cors = require('cors')
     var states = {};
 
-
     if (options.cors) {
         app.use(cors());
     }
+
+    if(options.data.length > 0) {
+        require('./persist.js').start(options);
+    }
+
     app.use(function (req, res, next) {
         res.setHeader('X-Powered-By', 'EM-PIPE')
         next()
     })
 
     var cacheOptions = {};
-
     if (options.cache) {
         cacheOptions['maxAge'] = options.cache;
     }
