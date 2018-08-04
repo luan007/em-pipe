@@ -53,10 +53,18 @@ module.exports.start = function (options) {
             return obj;
         }
         if (!obj) return obj;
+
+        var logicf = {};
+        for (var i in filter) {
+            if (!i.startsWith("$")) {
+                logicf[i] = filter[i];
+            }
+        }
+
         // if (filter.jpath) {
         //     obj = jsonpath.query(obj, filter.jpath);
         // } else {
-        obj = _.filter(obj, filter);
+        obj = _.filter(obj, logicf);
         obj.filtered = true;
         // }
         return obj;
@@ -71,6 +79,31 @@ module.exports.start = function (options) {
             return (result);
         }
         return undefined;
+    }
+
+    function filterView(a, query) {
+        if (typeof a == 'object' && query["$toarr"]) {
+            var b = [];
+            for (var i in a) {
+                b.push(a[i]);
+            }
+            a = b;
+        }
+        if (!Array.isArray(a)) return a;
+        if (query["$sort"]) {
+            a = _.sortBy(a, query["$sort"]);
+        }
+        if (query["$pageSize"] > 0 && query["$page"] >= 0) {
+            a = _.take(a, query["$pageSize"] * (query["$page"] + 1));
+            a = _.takeRight(a, query["$pageSize"]);
+        }
+        if (query["$skip"] > 0) {
+            a = _.takeRight(a, a.length - query["$skip"]);
+        }
+        if (query["$take"] > 0) {
+            a = _.take(a, query["$take"]);
+        }
+        return a;
     }
 
     function prepInsertion(p) {
@@ -95,7 +128,7 @@ module.exports.start = function (options) {
         if (req.method == 'GET') {
             var r = filterDown(req.path, req.query);
             if (r) {
-                return res.json(r);
+                return res.json(filterView(r, req.query));
             }
         } else if (req.method = 'POST' && options.data_flexible) { //add data to list
             if (routeToCompletePath(req.path).length == 0 && !options.data_edit_root) {

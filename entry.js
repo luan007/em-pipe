@@ -182,18 +182,15 @@ function createServer(options) {
         res.json(states[req.params['key']]).end();
     });
 
+    if (options.data && options.data.length > 0) {
+        require('./persist.js').start(options);
+    }
+
     if (options.dir) {
         app.use('/', serveStatic(options.root, cacheOptions), serveIndex(options.root, { 'icons': true }));
     } else {
         app.use('/', serveStatic(options.root, cacheOptions));
     }
-
-
-    if (options.data && options.data.length > 0) {
-        require('./persist.js').start(options);
-    }
-
-
 
     return server;
 }
