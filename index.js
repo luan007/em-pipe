@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var program = require('commander');
 
 program
@@ -13,7 +15,6 @@ program
   .option('-o, --open', 'open browser (default false)')
   .arguments("Root Path")
   .parse(process.argv);
-
 
 var opts = {
   cache: program.cache,
