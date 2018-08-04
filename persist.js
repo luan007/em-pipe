@@ -70,12 +70,19 @@ module.exports.start = function (options) {
         return obj;
     }
 
-    function filterDown(path, query, body) {
+    function filterDown(path, query, body, skipQuery) {
         var r = routeToCompletePath(path);
         var result = r.length == 0 ? db : _.get(db, r);
         if (result) {
             var qs = query;
-            result = applyFilters(result, qs);
+            if (body) {
+                for(var i in qs) {
+                    qs[i] = qs[i] || body[i];
+                }
+            }
+            if (!skipQuery) {
+                result = applyFilters(result, qs);
+            }
             return (result);
         }
         return undefined;
@@ -134,10 +141,14 @@ module.exports.start = function (options) {
             if (routeToCompletePath(req.path).length == 0 && !options.data_edit_root) {
                 return res.status(400).send("edit denied due to defined policy :(").end();
             }
-            var r = filterDown(req.path, req.query, req.body);
+            var r = filterDown(req.path, req.query, req.body, false);
 
             if (r.filtered && r.length == 1) {
                 r = r[0]; //precision modification
+            }
+
+            if (r.filtered && r.length == 0) {
+                r = filterDown(req.path, req.query, req.body, true);
             }
 
             var d = prepInsertion(req.body);
