@@ -101,6 +101,7 @@ function createServer(options) {
     }
 
     var io = require('socket.io')(server);
+    options.io = io;
     function broadcast(event, data, _owner) {
         var clients = io.sockets.sockets;
         for (var e in clients) {

@@ -25,6 +25,9 @@ module.exports.start = function (options) {
     var file = options.data_file;
     function save() {
         fs.writeFileSync(file, JSON.stringify(db));
+        if(options.io) {
+            options.io.emit("persist:" + options.data, {});
+        }
     }
 
     save = defered(save, 100); //100ms buffer time..
@@ -32,7 +35,12 @@ module.exports.start = function (options) {
         db = JSON.parse(fs.readFileSync(file).toString());
     }
 
-    load();
+    try {
+        load();
+    } catch (e) {
+        console.log("Data support is suspended due to lack of file");
+        return;
+    }
 
     function routeToCompletePath(path, str) {
         var s = path.split("/").filter((v) => {
@@ -76,7 +84,7 @@ module.exports.start = function (options) {
         if (result) {
             var qs = query;
             if (body) {
-                for(var i in qs) {
+                for (var i in qs) {
                     qs[i] = qs[i] || body[i];
                 }
             }
